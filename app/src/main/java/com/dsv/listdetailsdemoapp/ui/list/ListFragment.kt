@@ -16,28 +16,32 @@ import com.dsv.listdetailsdemoapp.ui.detail.DetailFragment.Companion.PARAM_POST_
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ListFragment : Fragment() {
-    private val viewModel: ListViewModel by viewModels()
+class ListFragment(
+    private val viewModelProvider: (Fragment) -> ListViewModel
+) : Fragment() {
+
+    private val viewModel: ListViewModel by lazy {
+        viewModelProvider(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                MaterialTheme {
-                    val state = viewModel.uiState.collectAsStateWithLifecycle().value
-                    ListScreen(
-                        state = state,
-                        onPostClick = { postId ->
-                            navigateToPostDetails(postId)
-                        },
-                    )
-                }
+    ): View = ComposeView(requireContext()).apply {
+        setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        setContent {
+            MaterialTheme {
+                val state = viewModel.uiState.collectAsStateWithLifecycle().value
+                ListScreen(
+                    state = state,
+                    onPostClick = { postId ->
+                        navigateToPostDetails(postId)
+                    },
+                )
             }
         }
+    }
 
     private fun navigateToPostDetails(postId: Int) {
         val bundle = Bundle().apply { putInt(PARAM_POST_ID, postId) }
