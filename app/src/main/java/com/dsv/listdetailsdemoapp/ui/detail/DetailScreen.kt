@@ -28,6 +28,7 @@ import com.dsv.listdetailsdemoapp.ui.UiState
 fun DetailScreen(
     state: UiState<Post>,
     onRetry: () -> Unit,
+    onShare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -67,7 +68,7 @@ fun DetailScreen(
                     }
 
                 is UiState.Success -> {
-                    PostDetailView(state)
+                    PostDetailView(state, onShare)
                 }
             }
         }
@@ -77,6 +78,7 @@ fun DetailScreen(
 @Composable
 fun PostDetailView(
     state: UiState<Post>,
+    onShare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val data = (state as UiState.Success).data
@@ -97,5 +99,9 @@ fun PostDetailView(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground,
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onShare) {
+            Text(text = stringResource(R.string.share))
+        }
     }
 }

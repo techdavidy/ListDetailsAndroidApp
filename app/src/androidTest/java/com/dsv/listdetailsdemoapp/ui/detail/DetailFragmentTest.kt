@@ -56,6 +56,20 @@ class DetailFragmentTest {
         verify(exactly = 2) { viewModel.loadPostDetail(POST_ID) }
     }
 
+    @Test
+    fun shareButtonRoutesToTheViewModel() {
+        // 1. Arrange
+        val post = Post(id = POST_ID, title = "Jetpack Post", body = "Jetpack Body")
+        val viewModel = mockDetailViewModel(UiState.Success(post))
+        launchDetailFragment(viewModel)
+
+        // 2. Act
+        composeTestRule.onNodeWithText(SHARE_LABEL).performClick()
+
+        // 3. Assert
+        verify(exactly = 1) { viewModel.onShareClick() }
+    }
+
     private fun mockDetailViewModel(state: UiState<Post>): DetailViewModel =
         mockk<DetailViewModel>(relaxed = true).also { viewModel ->
             every { viewModel.uiState } returns MutableStateFlow(state)
@@ -76,5 +90,6 @@ class DetailFragmentTest {
     private companion object {
         const val POST_ID = 42
         const val RETRY_LABEL = "Retry"
+        const val SHARE_LABEL = "Share"
     }
 }

@@ -8,4 +8,6 @@ interface DetailViewModel {
     val uiState: StateFlow<UiState<Post>>
 
     fun loadPostDetail(postId: Int)
+
+    fun onShareClick()
 }

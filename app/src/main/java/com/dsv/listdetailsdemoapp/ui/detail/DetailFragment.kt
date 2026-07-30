@@ -44,6 +44,7 @@ class DetailFragment(
                     DetailScreen(
                         state = state,
                         onRetry = { viewModel.loadPostDetail(postId) },
+                        onShare = { viewModel.onShareClick() },
                     )
                 }
             }

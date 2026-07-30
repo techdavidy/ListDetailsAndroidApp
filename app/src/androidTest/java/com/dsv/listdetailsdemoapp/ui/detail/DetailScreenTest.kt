@@ -56,19 +56,38 @@ class DetailScreenTest {
         assertEquals(1, retryCount)
     }
 
+    @Test
+    fun displaysShareButtonWhenStateIsSuccess() {
+        setScreenContent(UiState.Success(POST))
+
+        composeTestRule.onNodeWithText(SHARE_LABEL).assertIsDisplayed()
+    }
+
+    @Test
+    fun invokesOnShareWhenShareButtonIsClicked() {
+        var shareCount = 0
+        setScreenContent(UiState.Success(POST), onShare = { shareCount++ })
+
+        composeTestRule.onNodeWithText(SHARE_LABEL).performClick()
+
+        assertEquals(1, shareCount)
+    }
+
     private fun setScreenContent(
         state: UiState<Post>,
         onRetry: () -> Unit = {},
+        onShare: () -> Unit = {},
     ) {
         composeTestRule.setContent {
             MaterialTheme {
-                DetailScreen(state = state, onRetry = onRetry)
+                DetailScreen(state = state, onRetry = onRetry, onShare = onShare)
             }
         }
     }
 
     private companion object {
         const val RETRY_LABEL = "Retry"
+        const val SHARE_LABEL = "Share"
         val POST = Post(id = 42, title = "Jetpack Post", body = "Jetpack Body")
     }
 }
