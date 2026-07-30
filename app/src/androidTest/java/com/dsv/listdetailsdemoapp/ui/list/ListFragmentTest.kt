@@ -5,16 +5,22 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
-import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.dsv.listdetailsdemoapp.R
 import com.dsv.listdetailsdemoapp.data.model.Post
 import com.dsv.listdetailsdemoapp.ui.UiState
 import com.dsv.listdetailsdemoapp.util.launchFragmentInHiltContainer
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/**
+ * Covers only what is specific to the fragment: that the injected [ListViewModel]'s state is
+ * collected and handed to [ListScreen]. Rendering of each [UiState] branch lives in
+ * [ListScreenTest].
+ */
 @RunWith(AndroidJUnit4::class)
 class ListFragmentTest {
 
@@ -22,31 +28,26 @@ class ListFragmentTest {
     val composeTestRule = createEmptyComposeRule()
 
     @Test
-    fun displaysPostsInComposeViewWhenStateIsSuccess() {
-        // 1. Prepare Fake Data & ViewModel
-        val fakePosts = listOf(
-            Post(id = 1, title = "First Jetpack Post", body = "First Jetpack Body"),
-            Post(id = 2, title = "Second Jetpack Post", body = "Second Jetpack Body")
-        )
-        val fakeViewModel = FakeListViewModel(
-            initialState = UiState.Success(fakePosts)
-        )
-
-        // 2. Create Test FragmentFactory
-        val testFactory = object : FragmentFactory() {
-            override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-                return ListFragment { _ -> fakeViewModel }
-            }
+    fun rendersStateFromTheInjectedViewModel() {
+        // 1. Arrange — strict mock: an unstubbed member would fail loudly
+        val posts = listOf(Post(id = 1, title = "First Jetpack Post", body = "First Jetpack Body"))
+        val viewModel = mockk<ListViewModel> {
+            every { uiState } returns MutableStateFlow(UiState.Success(posts))
         }
 
-        // 3. Launch Fragment using launchFragmentInHiltContainer!
-        launchFragmentInHiltContainer<ListFragment>(
-            factory = testFactory
-        )
+        // 2. Act
+        launchListFragment(viewModel)
 
-        // 4. Assert UI
-        composeTestRule
-            .onNodeWithText("First Jetpack Post")
-            .assertIsDisplayed()
+        // 3. Assert
+        composeTestRule.onNodeWithText("First Jetpack Post").assertIsDisplayed()
+    }
+
+    private fun launchListFragment(viewModel: ListViewModel) {
+        val testFactory = object : FragmentFactory() {
+            override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
+                ListFragment { _ -> viewModel }
+        }
+
+        launchFragmentInHiltContainer<ListFragment>(factory = testFactory)
     }
 }

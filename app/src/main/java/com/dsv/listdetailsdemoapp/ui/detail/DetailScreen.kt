@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +27,7 @@ import com.dsv.listdetailsdemoapp.ui.UiState
 @Composable
 fun DetailScreen(
     state: UiState<Post>,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -50,11 +52,19 @@ fun DetailScreen(
             when (state) {
                 is UiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
                 is UiState.Error ->
-                    Text(
-                        text = state.message,
-                        color = MaterialTheme.colorScheme.error,
+                    Column(
                         modifier = Modifier.align(Alignment.Center),
-                    )
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = state.message,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = onRetry) {
+                            Text(text = stringResource(R.string.retry))
+                        }
+                    }
 
                 is UiState.Success -> {
                     PostDetailView(state)

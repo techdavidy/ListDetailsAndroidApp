@@ -2,19 +2,21 @@ package com.dsv.listdetailsdemoapp.ui
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
-import androidx.lifecycle.ViewModelProvider
-import com.dsv.listdetailsdemoapp.ui.list.ListFragment
-import com.dsv.listdetailsdemoapp.ui.list.ListViewModelImpl
 import javax.inject.Inject
+import javax.inject.Provider
 
-class AppFragmentFactory @Inject constructor() : FragmentFactory() {
+/**
+ * Instantiates fragments from providers contributed with `@IntoMap` + `@FragmentKey`, so adding a
+ * screen never requires editing this class. Falls back to reflection for fragments with no
+ * registered provider.
+ */
+class AppFragmentFactory @Inject constructor(
+    private val fragmentProviders: Map<Class<out Fragment>, @JvmSuppressWildcards Provider<Fragment>>,
+) : FragmentFactory() {
 
     override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
-        return when (className) {
-            ListFragment::class.java.name -> ListFragment { fragment ->
-                ViewModelProvider(fragment)[ListViewModelImpl::class.java]
-            }
-            else -> super.instantiate(classLoader, className)
-        }
+        val fragmentClass = FragmentFactory.loadFragmentClass(classLoader, className)
+        return fragmentProviders[fragmentClass]?.get()
+            ?: super.instantiate(classLoader, className)
     }
 }
